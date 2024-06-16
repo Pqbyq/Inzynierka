@@ -1,5 +1,6 @@
 import os
 import psycopg2
+from psycopg2.extras import RealDictCursor
 import logging
 from datetime import datetime
 
@@ -17,6 +18,22 @@ handler.setLevel(logging.DEBUG)
 formatter = logging.Formatter('%(asctime)s - %(levelname)s - %(message)s')
 handler.setFormatter(formatter)
 logger.addHandler(handler)
+
+def get_db_connection():
+    try:
+        conn = psycopg2.connect(
+            dbname='mydatabase',
+            user='myuser',
+            password='mypassword',
+            host='postgres',
+            port='5432'
+        )
+        conn.autocommit = True
+        return conn
+    except Exception as e:
+        logger.error(f"Error: {e}")
+        return None
+    
 
 def save_to_postgresql(metrics):
     try:
@@ -65,3 +82,29 @@ def save_to_postgresql(metrics):
         logger.info("Closed connection to PostgreSQL")
     except Exception as e:
         logger.error(f"Error: {e}")
+
+
+def get_unique_namespaces():
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    cursor.execute('SELECT DISTINCT namespace FROM metrics;')
+    namespaces = [row[0] for row in cursor.fetchall()]
+    cursor.close()
+    conn.close()
+    return namespaces
+
+def get_latest_metrics(namespace=None):
+    conn = get_db_connection()
+    cursor = conn.cursor(cursor_factory=RealDictCursor)
+    query = '''
+        SELECT DISTINCT ON (name) *
+        FROM metrics
+        {}
+        ORDER BY name, timestamp DESC
+    '''.format('WHERE namespace = %s' if namespace else '')
+    params = [namespace] if namespace else []
+    cursor.execute(query, params)
+    metrics = cursor.fetchall()
+    cursor.close()
+    conn.close()
+    return metrics
