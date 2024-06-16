@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Kubernetes Metrics</title>
+    <title>Kubernetes Metrics Dashboard</title>
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css">
     <style>
         body {
@@ -27,6 +27,17 @@
 <body>
     <div class="container">
         <h2>Kubernetes Metrics</h2>
+        <form method="GET" action="/">
+            <div class="form-group">
+                <label for="namespace">Select Namespace:</label>
+                <select class="form-control" id="namespace" name="namespace" onchange="this.form.submit()">
+                    <option value="All" {% if selected_namespace == 'All' %}selected{% endif %}>All</option>
+                    {% for namespace in namespaces %}
+                        <option value="{{ namespace }}" {% if namespace == selected_namespace %}selected{% endif %}>{{ namespace }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+        </form>
         <table class="table table-bordered">
             <thead class="thead-light">
                 <tr>

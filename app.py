@@ -1,9 +1,9 @@
-from flask import Flask, render_template
+from flask import Flask, render_template, request
 from logging.handlers import RotatingFileHandler
 import logging
 import os
 from metrics import get_cluster_metrics
-from db import save_to_postgresql
+from db import save_to_postgresql, get_unique_namespaces, get_latest_metrics
 from flask_apscheduler import APScheduler
 
 log_dir = '/var/log/metrics-app/'
@@ -42,14 +42,16 @@ def get_and_save_metrics():
     except Exception as e:
         app.logger.error(f"Error: {e}")
 
-@app.route('/')
+@app.route('/', methods=['GET'])
 def index():
-    try:
-        metrics = get_cluster_metrics(namespace=None)
-        return render_template('index.html', metrics=metrics)
-    except Exception as e:
-        app.logger.error(f"Error: {e}")
-        return f"An error occurred: {e}"
+    selected_namespace = request.args.get('namespace', 'All')
+    namespaces = get_unique_namespaces()
+    metrics = get_latest_metrics(None if selected_namespace == 'All' else selected_namespace)
+    app.logger.info(f"Selected namespace: {selected_namespace}")
+    app.logger.info(f"Namespaces: {namespaces}")
+    app.logger.info(f"Metrics: {metrics}")
+    return render_template('index.html', metrics=metrics, namespaces=namespaces,
+                           selected_namespace=selected_namespace)
 
 if __name__ == '__main__':
     scheduler.start()
