@@ -37,6 +37,15 @@
                     {% endfor %}
                 </select>
             </div>
+            <div class="form-group">
+                <label for="pod">Select Pod:</label>
+                <select class="form-control" id="pod" name="pod" onchange="this.form.submit()">
+                    <option value="All" {% if selected_pod == 'All' %}selected{% endif %}>All</option>
+                    {% for pod in pods %}
+                        <option value="{{ pod }}" {% if pod == selected_pod %}selected{% endif %}>{{ pod }}</option>
+                    {% endfor %}
+                </select>
+            </div>
         </form>
         <table class="table table-bordered">
             <thead class="thead-light">

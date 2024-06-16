@@ -93,18 +93,48 @@ def get_unique_namespaces():
     conn.close()
     return namespaces
 
-def get_latest_metrics(namespace=None):
+def get_latest_metrics(namespace=None, pod=None):
     conn = get_db_connection()
+    if conn is None:
+        print("Failed to connect to the database.")
+        return []
     cursor = conn.cursor(cursor_factory=RealDictCursor)
     query = '''
         SELECT DISTINCT ON (name) *
         FROM metrics
-        {}
-        ORDER BY name, timestamp DESC
-    '''.format('WHERE namespace = %s' if namespace else '')
-    params = [namespace] if namespace else []
+    '''
+    conditions = []
+    params = []
+
+    if namespace:
+        conditions.append('namespace = %s')
+        params.append(namespace)
+    if pod:
+        conditions.append('name = %s')
+        params.append(pod)
+    
+    if conditions:
+        query += ' WHERE ' + ' AND '.join(conditions)
+    
+    query += ' ORDER BY name, timestamp DESC'
+
     cursor.execute(query, params)
     metrics = cursor.fetchall()
     cursor.close()
     conn.close()
     return metrics
+
+
+def get_pods_in_namespace(namespace):
+    if not namespace:
+        return []
+    conn = get_db_connection()
+    if conn is None:
+        print("Failed to connect to the database.")
+        return []
+    cursor = conn.cursor()
+    cursor.execute('SELECT DISTINCT name FROM metrics WHERE namespace = %s;', (namespace,))
+    pods = [row[0] for row in cursor.fetchall()]
+    cursor.close()
+    conn.close()
+    return pods
