@@ -6,6 +6,7 @@
     <title>Kubernetes Metrics Dashboard</title>
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css">
     <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
     <nav class="navbar navbar-expand-lg navbar-dark">
@@ -72,6 +73,28 @@
                 </table>
             </div>
         </div>
+        <div class="card">
+            <div class="card-header">
+                <h2>CPU Usage Over Time</h2>
+            </div>
+            <div class="card-body">
+                <form id="timeRangeForm">
+                    <div class="form-row">
+                        <div class="form-group col-md-6">
+                            <label for="start_time">Start Time:</label>
+                            <input type="datetime-local" class="form-control" id="start_time" name="start_time">
+                        </div>
+                        <div class="form-group col-md-6">
+                            <label for="end_time">End Time:</label>
+                            <input type="datetime-local" class="form-control" id="end_time" name="end_time">
+                        </div>
+                    </div>
+                    <button type="submit" class="btn btn-primary">Update</button>
+                </form>
+                <canvas id="cpuUsageChart"></canvas>
+            </div>
+        </div>
     </div>
+    <script src="{{ url_for('static', filename='script.js') }}"></script>
 </body>
 </html>
