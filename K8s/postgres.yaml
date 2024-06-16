@@ -8,7 +8,7 @@ data:
   POSTGRES_PASSWORD: mypassword
 
 ---
-
+ 
 apiVersion: v1
 kind: PersistentVolume
 metadata:
