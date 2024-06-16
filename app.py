@@ -3,7 +3,7 @@ from logging.handlers import RotatingFileHandler
 import logging
 import os
 from metrics import get_cluster_metrics
-from db import save_to_postgresql, get_unique_namespaces, get_latest_metrics
+from db import save_to_postgresql, get_unique_namespaces, get_pods_in_namespace, get_latest_metrics
 from flask_apscheduler import APScheduler
 
 log_dir = '/var/log/metrics-app/'
@@ -45,13 +45,20 @@ def get_and_save_metrics():
 @app.route('/', methods=['GET'])
 def index():
     selected_namespace = request.args.get('namespace', 'All')
+    selected_pod = request.args.get('pod', 'All')
     namespaces = get_unique_namespaces()
-    metrics = get_latest_metrics(None if selected_namespace == 'All' else selected_namespace)
+    pods = get_pods_in_namespace(None if selected_namespace == 'All' else selected_namespace)
+    metrics = get_latest_metrics(
+        None if selected_namespace == 'All' else selected_namespace,
+        None if selected_pod == 'All' else selected_pod
+    )
     app.logger.info(f"Selected namespace: {selected_namespace}")
+    app.logger.info(f"Selected pod: {selected_pod}")
     app.logger.info(f"Namespaces: {namespaces}")
+    app.logger.info(f"Pods: {pods}")
     app.logger.info(f"Metrics: {metrics}")
-    return render_template('index.html', metrics=metrics, namespaces=namespaces,
-                           selected_namespace=selected_namespace)
+    return render_template('index.html', metrics=metrics, namespaces=namespaces, pods=pods,
+                           selected_namespace=selected_namespace, selected_pod=selected_pod)
 
 if __name__ == '__main__':
     scheduler.start()
