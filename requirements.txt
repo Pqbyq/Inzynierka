@@ -1,0 +1,6 @@
+kubernetes==18.20.0
+datetime
+flask
+psycopg2
+sqlalchemy
+flask_apscheduler
