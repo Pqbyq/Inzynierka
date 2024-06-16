@@ -138,3 +138,53 @@ def get_pods_in_namespace(namespace):
     cursor.close()
     conn.close()
     return pods
+
+def get_cpu_usage_over_time(namespace=None, pod=None, start_time=None, end_time=None):
+    conn = get_db_connection()
+    if conn is None:
+        print("Failed to connect to the database.")
+        return {'labels': [], 'datasets': []}
+
+    cursor = conn.cursor(cursor_factory=RealDictCursor)
+    query = '''
+        SELECT timestamp, name, cpu_usage
+        FROM metrics
+        WHERE 1=1
+    '''
+    params = []
+
+    if namespace:
+        query += ' AND namespace = %s'
+        params.append(namespace)
+    if pod:
+        query += ' AND name = %s'
+        params.append(pod)
+    if start_time:
+        query += ' AND timestamp >= %s'
+        params.append(datetime.fromisoformat(start_time))
+    if end_time:
+        query += ' AND timestamp <= %s'
+        params.append(datetime.fromisoformat(end_time))
+
+    query += ' ORDER BY timestamp'
+
+    cursor.execute(query, params)
+    rows = cursor.fetchall()
+    cursor.close()
+    conn.close()
+
+    data = {'labels': [], 'datasets': []}
+    if rows:
+        data['labels'] = sorted(list(set(row['timestamp'].isoformat() for row in rows)))
+
+        containers = {row['name'] for row in rows}
+        for container in containers:
+            dataset = {
+                'label': container,
+                'data': [{'x': row['timestamp'].isoformat(), 'y': float(row['cpu_usage'])} for row in rows if row['name'] == container],
+                'fill': False,
+                'borderColor': 'rgba(75, 192, 192, 1)',
+                'backgroundColor': 'rgba(75, 192, 192, 0.2)'
+            }
+            data['datasets'].append(dataset)
+    return data
