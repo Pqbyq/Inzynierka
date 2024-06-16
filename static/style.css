@@ -1,0 +1,50 @@
+body {
+    margin: 20px;
+    background-color: #f8f9fa;
+    font-family: Arial, sans-serif;
+}
+.navbar {
+    margin-bottom: 20px;
+    background-color: #00313b; /* color1 */
+}
+.navbar-brand {
+    color: #ffffae !important; /* color5 */
+}
+.card {
+    margin-top: 20px;
+}
+.card-header {
+    background-color: #0063a0; /* color2 */
+    color: #ffffae; /* color5 */
+}
+.form-control {
+    border-color: #3ea800; /* color3 */
+}
+.btn-primary {
+    background-color: #3ea800; /* color3 */
+    border-color: #3ea800; /* color3 */
+}
+.btn-primary:hover {
+    background-color: #d9dd3e; /* color4 */
+    border-color: #d9dd3e; /* color4 */
+}
+table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 20px;
+}
+th, td {
+    border: 1px solid #ddd;
+    padding: 8px;
+    text-align: left;
+}
+th {
+    background-color: #00313b; /* color1 */
+    color: #ffffae; /* color5 */
+}
+tr:nth-child(even) {
+    background-color: #f2f2f2;
+}
+tr:hover {
+    background-color: #d9dd3e; /* color4 */
+}

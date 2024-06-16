@@ -5,72 +5,73 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Kubernetes Metrics Dashboard</title>
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css">
-    <style>
-        body {
-            margin: 20px;
-        }
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-top: 20px;
-        }
-        th, td {
-            border: 1px solid #ddd;
-            padding: 8px;
-            text-align: left;
-        }
-        th {
-            background-color: #f2f2f2;
-        }
-    </style>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
 </head>
 <body>
+    <nav class="navbar navbar-expand-lg navbar-dark">
+        <a class="navbar-brand" href="#">Kubernetes Metrics Dashboard</a>
+    </nav>
     <div class="container">
-        <h2>Kubernetes Metrics</h2>
-        <form method="GET" action="/">
-            <div class="form-group">
-                <label for="namespace">Select Namespace:</label>
-                <select class="form-control" id="namespace" name="namespace" onchange="this.form.submit()">
-                    <option value="All" {% if selected_namespace == 'All' %}selected{% endif %}>All</option>
-                    {% for namespace in namespaces %}
-                        <option value="{{ namespace }}" {% if namespace == selected_namespace %}selected{% endif %}>{{ namespace }}</option>
-                    {% endfor %}
-                </select>
+        <div class="card">
+            <div class="card-header">
+                <h2>Filter Metrics</h2>
             </div>
-            <div class="form-group">
-                <label for="pod">Select Pod:</label>
-                <select class="form-control" id="pod" name="pod" onchange="this.form.submit()">
-                    <option value="All" {% if selected_pod == 'All' %}selected{% endif %}>All</option>
-                    {% for pod in pods %}
-                        <option value="{{ pod }}" {% if pod == selected_pod %}selected{% endif %}>{{ pod }}</option>
-                    {% endfor %}
-                </select>
+            <div class="card-body">
+                <form method="GET" action="/">
+                    <div class="form-row">
+                        <div class="form-group col-md-6">
+                            <label for="namespace">Select Namespace:</label>
+                            <select class="form-control" id="namespace" name="namespace" onchange="this.form.submit()">
+                                <option value="All" {% if selected_namespace == 'All' %}selected{% endif %}>All</option>
+                                {% for namespace in namespaces %}
+                                    <option value="{{ namespace }}" {% if namespace == selected_namespace %}selected{% endif %}>{{ namespace }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="form-group col-md-6">
+                            <label for="pod">Select Pod:</label>
+                            <select class="form-control" id="pod" name="pod" onchange="this.form.submit()">
+                                <option value="All" {% if selected_pod == 'All' %}selected{% endif %}>All</option>
+                                {% for pod in pods %}
+                                    <option value="{{ pod }}" {% if pod == selected_pod %}selected{% endif %}>{{ pod }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+                </form>
             </div>
-        </form>
-        <table class="table table-bordered">
-            <thead class="thead-light">
-                <tr>
-                    <th>Namespace</th>
-                    <th>Name</th>
-                    <th>Status</th>
-                    <th>CPU Usage</th>
-                    <th>Memory Usage</th>
-                    <th>Timestamp</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for metric in metrics %}
-                <tr>
-                    <td>{{ metric['namespace'] }}</td>
-                    <td>{{ metric['name'] }}</td>
-                    <td>{{ metric['status'] }}</td>
-                    <td>{{ metric['cpu_usage'] }}</td>
-                    <td>{{ metric['memory_usage'] }}</td>
-                    <td>{{ metric['timestamp'] }}</td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
+        </div>
+        <div class="card">
+            <div class="card-header">
+                <h2>Metrics</h2>
+            </div>
+            <div class="card-body">
+                <table class="table table-bordered">
+                    <thead class="thead-dark">
+                        <tr>
+                            <th>Namespace</th>
+                            <th>Name</th>
+                            <th>Status</th>
+                            <th>CPU Usage</th>
+                            <th>Memory Usage</th>
+                            <th>Timestamp</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for metric in metrics %}
+                        <tr>
+                            <td>{{ metric['namespace'] }}</td>
+                            <td>{{ metric['name'] }}</td>
+                            <td>{{ metric['status'] }}</td>
+                            <td>{{ metric['cpu_usage'] }}</td>
+                            <td>{{ metric['memory_usage'] }}</td>
+                            <td>{{ metric['timestamp'] }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
     </div>
 </body>
 </html>
