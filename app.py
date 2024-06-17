@@ -24,9 +24,6 @@ formatter = logging.Formatter('%(asctime)s - %(levelname)s - %(message)s')
 handler.setFormatter(formatter)
 app.logger.addHandler(handler)
 
-# Ustawienia lokalnej strefy czasowej
-local_timezone = pytz.timezone('Europe/Warsaw')
-
 # Konfiguracja APScheduler
 class Config:
     SCHEDULER_API_ENABLED = True
@@ -79,6 +76,8 @@ def cpu_usage():
     data = get_cpu_usage_over_time(namespace, pod, start_time, end_time)
     app.logger.info(f"CPU usage data: {data}")
     return jsonify(data)
+
+
 
 if __name__ == '__main__':
     scheduler.start()

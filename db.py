@@ -2,7 +2,7 @@ import os
 import psycopg2
 from psycopg2.extras import RealDictCursor
 import logging
-from datetime import datetime
+from datetime import datetime, timedelta
 
 # Konfiguracja logowania
 log_dir = '/var/log/metrics-app/'
@@ -33,7 +33,6 @@ def get_db_connection():
     except Exception as e:
         logger.error(f"Error: {e}")
         return None
-    
 
 def save_to_postgresql(metrics):
     try:
@@ -68,21 +67,20 @@ def save_to_postgresql(metrics):
             status = metric.get('status', 'unknown')
             cpu_usage = metric.get('cpu_usage', 'unknown')
             memory_usage = metric.get('memory_usage', 'unknown')
-            timestamp = metric.get('timestamp','unknown')
+            timestamp = metric.get('timestamp') + timedelta(hours=2)  # Dodaj 2 godziny
             insert_query = '''
             INSERT INTO Metrics (namespace, name, status, cpu_usage, memory_usage, timestamp)
             VALUES (%s, %s, %s, %s, %s, %s);
             '''
-            cursor.execute(insert_query, (namespace, name, status, cpu_usage, memory_usage,timestamp))
+            cursor.execute(insert_query, (namespace, name, status, cpu_usage, memory_usage, timestamp))
             conn.commit()
-            logger.info(f"Inserted metric: {namespace}, {name}, {status}, {cpu_usage}, {memory_usage},{timestamp}")
+            logger.info(f"Inserted metric: {namespace}, {name}, {status}, {cpu_usage}, {memory_usage}, {timestamp}")
 
         cursor.close()
         conn.close()
         logger.info("Closed connection to PostgreSQL")
     except Exception as e:
         logger.error(f"Error: {e}")
-
 
 def get_unique_namespaces():
     conn = get_db_connection()
@@ -124,7 +122,6 @@ def get_latest_metrics(namespace=None, pod=None):
     conn.close()
     return metrics
 
-
 def get_pods_in_namespace(namespace):
     if not namespace:
         return []
@@ -161,10 +158,10 @@ def get_cpu_usage_over_time(namespace=None, pod=None, start_time=None, end_time=
         params.append(pod)
     if start_time:
         query += ' AND timestamp >= %s'
-        params.append(datetime.fromisoformat(start_time))
+        params.append(datetime.fromisoformat(start_time) + timedelta(hours=2))
     if end_time:
         query += ' AND timestamp <= %s'
-        params.append(datetime.fromisoformat(end_time))
+        params.append(datetime.fromisoformat(end_time) + timedelta(hours=2))
 
     query += ' ORDER BY timestamp'
 
