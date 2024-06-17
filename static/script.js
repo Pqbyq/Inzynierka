@@ -95,11 +95,12 @@ $(function () {
 
             // Tooltip settings
             series.tooltip().format(function() {
-                var pointData = this.points[0].data;
-                return `Namespace: ${pointData.namespace}<br>Pod: ${pointData.name}<br>CPU Usage: ${this.value}<br>Timestamp: ${moment(this.x).tz(tz).format('YYYY-MM-DD HH:mm:ss')}`;
+                return `Namespace: ${this.getData('namespace')}<br>Pod: ${this.getData('name')}<br>CPU Usage: ${this.value}<br>Timestamp: ${moment(this.x).tz(tz).format('YYYY-MM-DD HH:mm:ss')}`;
             });
         });
 
+        chart.legend(true); // Enable the legend
+        chart.legend().itemsFormat("{%seriesName}"); // Show series name in the legend
         chart.xAxis().labels().format(function () {
             return moment(this.value).tz(tz).format('HH:mm');
         });
