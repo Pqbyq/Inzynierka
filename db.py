@@ -145,16 +145,16 @@ def get_cpu_usage_over_time(namespace=None, pod=None, start_time=None, end_time=
 
     cursor = conn.cursor(cursor_factory=RealDictCursor)
     query = '''
-        SELECT timestamp, name, cpu_usage
+        SELECT timestamp, name, cpu_usage, namespace
         FROM metrics
         WHERE 1=1
     '''
     params = []
-
+ 
     if namespace:
         query += ' AND namespace = %s'
         params.append(namespace)
-    if pod and pod != 'All':
+    if pod:
         query += ' AND name = %s'
         params.append(pod)
     if start_time:
@@ -179,8 +179,8 @@ def get_cpu_usage_over_time(namespace=None, pod=None, start_time=None, end_time=
         for container in containers:
             dataset = {
                 'label': container,
-                'data': [{'x': row['timestamp'].astimezone(pytz.timezone('Europe/Warsaw')).isoformat(), 'y': float(row['cpu_usage'])} for row in rows if row['name'] == container],
-                'fill': False,
+                'data': [{'x': row['timestamp'].astimezone(pytz.timezone('Europe/Warsaw')).isoformat(), 'y': float(row['cpu_usage']), 'name': row['name'], 'namespace': row['namespace']} for row in rows if row['name'] == container],
+                'fill': False
             }
             data['datasets'].append(dataset)
     return data
