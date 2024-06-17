@@ -66,8 +66,8 @@ def get_cluster_metrics(namespace=None):
                 cpu_usage = convert_to_readable_cpu(pod_metrics['containers'][0]['usage']['cpu'])
                 memory_usage = convert_to_readable_memory(pod_metrics['containers'][0]['usage']['memory'])
             else:
-                cpu_usage = 'N/A'
-                memory_usage = 'N/A'
+                cpu_usage = 0.0
+                memory_usage = 0.0
 
             cluster_metrics.append({
                 'namespace': pod.metadata.namespace,

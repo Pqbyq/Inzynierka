@@ -2,7 +2,8 @@ import os
 import psycopg2
 from psycopg2.extras import RealDictCursor
 import logging
-from datetime import datetime, timedelta
+import pytz
+from datetime import datetime, timezone
 
 # Konfiguracja logowania
 log_dir = '/var/log/metrics-app/'
@@ -33,17 +34,15 @@ def get_db_connection():
     except Exception as e:
         logger.error(f"Error: {e}")
         return None
+    
 
 def save_to_postgresql(metrics):
     try:
-        conn = psycopg2.connect(
-            dbname='mydatabase',
-            user='myuser',
-            password='mypassword',
-            host='postgres',
-            port='5432'
-        )
-        conn.autocommit = True
+        conn = get_db_connection()
+        if conn is None:
+            logger.error("Failed to connect to the database.")
+            return
+
         cursor = conn.cursor()
         logger.info("Connected to PostgreSQL")
 
@@ -67,7 +66,7 @@ def save_to_postgresql(metrics):
             status = metric.get('status', 'unknown')
             cpu_usage = metric.get('cpu_usage', 'unknown')
             memory_usage = metric.get('memory_usage', 'unknown')
-            timestamp = metric.get('timestamp') + timedelta(hours=2)  # Dodaj 2 godziny
+            timestamp = metric.get('timestamp', 'unknown').astimezone(pytz.timezone('Europe/Warsaw'))
             insert_query = '''
             INSERT INTO Metrics (namespace, name, status, cpu_usage, memory_usage, timestamp)
             VALUES (%s, %s, %s, %s, %s, %s);
@@ -81,6 +80,7 @@ def save_to_postgresql(metrics):
         logger.info("Closed connection to PostgreSQL")
     except Exception as e:
         logger.error(f"Error: {e}")
+
 
 def get_unique_namespaces():
     conn = get_db_connection()
@@ -122,6 +122,7 @@ def get_latest_metrics(namespace=None, pod=None):
     conn.close()
     return metrics
 
+
 def get_pods_in_namespace(namespace):
     if not namespace:
         return []
@@ -153,15 +154,15 @@ def get_cpu_usage_over_time(namespace=None, pod=None, start_time=None, end_time=
     if namespace:
         query += ' AND namespace = %s'
         params.append(namespace)
-    if pod:
+    if pod and pod != 'All':
         query += ' AND name = %s'
         params.append(pod)
     if start_time:
         query += ' AND timestamp >= %s'
-        params.append(datetime.fromisoformat(start_time) + timedelta(hours=2))
+        params.append(datetime.fromisoformat(start_time).astimezone(pytz.timezone('Europe/Warsaw')))
     if end_time:
         query += ' AND timestamp <= %s'
-        params.append(datetime.fromisoformat(end_time) + timedelta(hours=2))
+        params.append(datetime.fromisoformat(end_time).astimezone(pytz.timezone('Europe/Warsaw')))
 
     query += ' ORDER BY timestamp'
 
@@ -172,16 +173,14 @@ def get_cpu_usage_over_time(namespace=None, pod=None, start_time=None, end_time=
 
     data = {'labels': [], 'datasets': []}
     if rows:
-        data['labels'] = sorted(list(set(row['timestamp'].isoformat() for row in rows)))
+        data['labels'] = sorted(list(set(row['timestamp'].astimezone(pytz.timezone('Europe/Warsaw')).isoformat() for row in rows)))
 
         containers = {row['name'] for row in rows}
         for container in containers:
             dataset = {
                 'label': container,
-                'data': [{'x': row['timestamp'].isoformat(), 'y': float(row['cpu_usage'])} for row in rows if row['name'] == container],
+                'data': [{'x': row['timestamp'].astimezone(pytz.timezone('Europe/Warsaw')).isoformat(), 'y': float(row['cpu_usage'])} for row in rows if row['name'] == container],
                 'fill': False,
-                'borderColor': 'rgba(75, 192, 192, 1)',
-                'backgroundColor': 'rgba(75, 192, 192, 0.2)'
             }
             data['datasets'].append(dataset)
     return data
