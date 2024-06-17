@@ -42,12 +42,24 @@ $(function () {
             },
             success: function (data) {
                 console.log("Data received from API:", data);
+                if (!data.datasets || data.datasets.length === 0) {
+                    console.warn("No datasets received.");
+                }
                 updateChart(data.datasets, data.labels);
             },
             error: function (xhr, status, error) {
                 console.error("Error fetching data:", error);
             }
         });
+    }
+
+    function getRandomColor() {
+        var letters = '0123456789ABCDEF';
+        var color = '#';
+        for (var i = 0; i < 6; i++) {
+            color += letters[Math.floor(Math.random() * 16)];
+        }
+        return color;
     }
 
     function updateChart(datasets, labels) {
@@ -75,10 +87,25 @@ $(function () {
         datasets.forEach(function (dataset) {
             var series = chart.line(dataset.data);
             series.name(dataset.label);
+
+            // Assign a random color to each series
+            var randomColor = getRandomColor();
+            series.stroke(randomColor);
+            series.fill(randomColor);
+
+            // Tooltip settings
+            series.tooltip().format(function() {
+                var pointData = this.points[0].data;
+                return `Namespace: ${pointData.namespace}<br>Pod: ${pointData.name}<br>CPU Usage: ${this.value}<br>Timestamp: ${moment(this.x).tz(tz).format('YYYY-MM-DD HH:mm:ss')}`;
+            });
         });
 
         chart.xAxis().labels().format(function () {
             return moment(this.value).tz(tz).format('HH:mm');
+        });
+
+        chart.tooltip().titleFormat(function() {
+            return moment(this.points[0].x).tz(tz).format('YYYY-MM-DD HH:mm:ss');
         });
 
         chart.draw();
@@ -98,5 +125,5 @@ $(function () {
         startTime = $('#start_time').val();
         endTime = $('#end_time').val();
         fetchData(namespace, pod, startTime, endTime);
-    }, 6000); // 60000 ms = 1 minute
+    }, 60000); // 60000 ms = 1 minute
 });
