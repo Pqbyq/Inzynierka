@@ -1,0 +1,151 @@
+body {
+    background-color: #2b323a; /* Ciemno granatowo pastelowe tło */
+    color: #00b300; /* Jasny tekst dla kontrastu */
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 0;
+}
+
+.navbar {
+    background-color: #216f96; /* Granatowy navbar */
+}
+
+.navbar-brand {
+    color: #001f05;
+}
+
+.navbar-brand:hover {
+    color: #7dbed8;
+}
+
+.container {
+    margin-top: 20px;
+    width: 100%; /* Dodano aby kontener zajmował całą szerokość */
+}
+
+.card {
+    background-color: #34495e; /* Ciemny kolor kart */
+    border: none;
+    color: #ffffff;
+    margin-bottom: 20px;
+    width: 100%; /* Dodano aby karta zajmowała całą szerokość */
+}
+
+.card-header {
+    background-color: #216f96;
+    color: #c2ffc2;
+}
+
+.card-body {
+    background-color: #2c3e50;
+    width: 100%; /* Dodano aby karta zajmowała całą szerokość */
+}
+
+.table {
+    color: #c2ffc2;
+    width: 100%; /* Dodano aby tabela zajmowała całą szerokość */
+}
+
+.table th,
+.table td {
+    border-color: #216f96;
+}
+
+.thead-dark th {
+    background-color: #216f96;
+    color: #c2ffc2;
+}
+
+.form-control {
+    background-color: #34495e;
+    border: 1px solid #216f96;
+    color: #c2ffc2;
+}
+
+.form-control:focus {
+    background-color: #34495e;
+    border-color: #392cea; /* Podkreślenie przy focus */
+    color: #c2ffc2;
+}
+
+.btn-primary {
+    background-color: #392cea;
+    border: none;
+    color: #c2ffc2;
+}
+
+.btn-primary:hover {
+    background-color: #8cc41d; /* Zmiana koloru przy hover */
+    color: #2c3e50;
+}
+
+#cpu_usage_chart {
+    height: 400px;
+    background-color: #34495e;
+}
+
+#start_time, #end_time {
+    background-color: #34495e;
+    border: 1px solid #216f96;
+    color: #c2ffc2;
+}
+
+#start_time:focus, #end_time:focus {
+    background-color: #34495e;
+    border-color: #392cea;
+    color: #c2ffc2;
+}
+
+::placeholder {
+    color: #7dbed8;
+}
+
+/* Dodatkowe style dla loadera */
+.anychart-loader {
+    background: rgba(44, 62, 80, 0.8); /* Ciemne tło z przezroczystością */
+}
+
+.anychart-loader .rotating-plane {
+    border-color: #216f96;
+}
+
+.anychart-loader .chart-row .chart-col.green {
+    background: #8cc41d;
+}
+
+.anychart-loader .chart-row .chart-col.orange {
+    background: #7dbed8;
+}
+
+.anychart-loader .chart-row .chart-col.red {
+    background: #f0402e;
+}
+
+.styled-table {
+    border-collapse: collapse;
+    margin: 25px 0;
+    font-size: 0.9em;
+    font-family: sans-serif;
+    min-width: 400px;
+    box-shadow: 0 0 20px rgba(0, 0, 0, 0.15);
+    width: 100%;
+}
+
+.styled-table thead tr {
+    background-color: #216f96;
+    color: #ffffff;
+    text-align: left;
+}
+
+.styled-table th,
+.styled-table td {
+    padding: 12px 15px;
+}
+
+.styled-table tbody tr {
+    background-color:  rgba(44, 62, 80, 0.8) /* Jasniejszy kolor dla wszystkich wierszy */
+}
+
+.styled-table tbody tr:nth-child(even) {
+    background-color: rgba(55, 77, 99, 0.8) /* Ciemniejszy kolor dla co drugiego wiersza */
+}
