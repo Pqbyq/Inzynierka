@@ -4,3 +4,5 @@ flask
 psycopg2
 sqlalchemy
 flask_apscheduler
+psycopg2-binary
+pytz

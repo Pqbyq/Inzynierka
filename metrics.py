@@ -32,10 +32,8 @@ def convert_to_readable_memory(value):
 
 def get_cluster_metrics(namespace=None):
     try:
-        # Load configuration inside the Pod
         config.load_incluster_config()
     except ConfigException:
-        # Load configuration for testing
         config.load_kube_config()
     
     v1 = client.CoreV1Api()
@@ -58,6 +56,13 @@ def get_cluster_metrics(namespace=None):
         if namespace is None or pod.metadata.namespace == namespace:
             pod_name = pod.metadata.name
             pod_status = pod.status.phase
+
+            # Check for container status conditions like CrashLoopBackOff
+            for container_status in pod.status.container_statuses:
+                if container_status.state.waiting and container_status.state.waiting.reason:
+                    pod_status = container_status.state.waiting.reason
+                elif container_status.state.terminated and container_status.state.terminated.reason:
+                    pod_status = container_status.state.terminated.reason
 
             # Szukaj metryk dla danego poda
             pod_metrics = next((metrics for metrics in pod_metrics_list['items'] if metrics['metadata']['name'] == pod_name), None)
