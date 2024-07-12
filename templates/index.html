@@ -35,11 +35,10 @@
                             </select>
                         </div>
                         <div class="form-group col-md-6">
-                            <label for="pod">Select Pod:</label>
-                            <select class="form-control" id="pod" name="pod" onchange="this.form.submit()">
-                                <option value="All" {% if selected_pod == 'All' %}selected{% endif %}>All</option>
+                            <label for="pod">Select Pods:</label>
+                            <select class="form-control" id="pod" name="pods" multiple size="10">
                                 {% for pod in pods %}
-                                    <option value="{{ pod }}" {% if pod == selected_pod %}selected{% endif %}>{{ pod }}</option>
+                                    <option value="{{ pod }}" {% if pod in selected_pods %}selected{% endif %}>{{ pod }}</option>
                                 {% endfor %}
                             </select>
                         </div>

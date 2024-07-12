@@ -47,14 +47,14 @@ def get_and_save_metrics():
 @app.route('/', methods=['GET'])
 def index():
     selected_namespace = request.args.get('namespace', 'All')
-    selected_pods = request.args.getlist('pod')
+    selected_pods = request.args.getlist('pods')
     start_time = request.args.get('start_time')
     end_time = request.args.get('end_time')
     namespaces = get_unique_namespaces()
     pods = get_pods_in_namespace(None if selected_namespace == 'All' else selected_namespace)
     metrics = get_latest_metrics(
         None if selected_namespace == 'All' else selected_namespace,
-        selected_pods if 'All' not in selected_pods else None
+        selected_pods if selected_pods else None
     )
     app.logger.info(f"Selected namespace: {selected_namespace}")
     app.logger.info(f"Selected pods: {selected_pods}")
@@ -66,14 +66,14 @@ def index():
 
 @app.route('/api/pods', methods=['GET'])
 def get_pods():
-    namespace = request.args.get('namespace', 'All')
-    pods = get_pods_in_namespace(None if namespace == 'All' else namespace)
+    namespace = request.args.get('namespace')
+    pods = get_pods_in_namespace(namespace)
     return jsonify({'pods': pods})
 
 @app.route('/api/usage', methods=['GET'])
 def usage():
     namespace = request.args.get('namespace')
-    pods = request.args.get('pods').split(',')
+    pods = request.args.getlist('pods[]')
     start_time = request.args.get('start_time')
     end_time = request.args.get('end_time')
     
@@ -90,6 +90,7 @@ def usage():
         'labels': data['labels']
     }
     return jsonify(response)
+
 
 if __name__ == '__main__':
     scheduler.start()

@@ -145,52 +145,23 @@ body {
 }
 
 .styled-table tbody tr {
-    background-color:  rgba(44, 62, 80, 0.8); /* Jasniejszy kolor dla wszystkich wierszy */
+    background-color: rgba(44, 62, 80, 0.8); /* Jasniejszy kolor dla wszystkich wierszy */
 }
 
 .styled-table tbody tr:nth-child(even) {
     background-color: rgba(55, 77, 99, 0.8); /* Ciemniejszy kolor dla co drugiego wiersza */
 }
 
-/* Style dla Choices.js */
-.choices__inner {
-    background-color: #34495e; 
-    border: 1px solid #216f96;
-    color: #c2ffc2;
-}
-
-.choices__input {
-    background-color: #34495e !important;
-    color: #c2ffc2 !important;
-}
-
-.choices__list--multiple .choices__item {
-    background-color: #216f96;
-    border: 1px solid #392cea;
-    color: #c2ffc2;
-    border-radius: 5px;
-    padding: 5px 10px;
-    margin: 5px 0;
-}
-
-.choices__list--dropdown .choices__item--selectable {
-    background-color: #2c3e50;
-    color: #c2ffc2;
-}
-
-.choices__list--dropdown .choices__item--selectable.is-highlighted {
-    background-color: #392cea;
-    color: #c2ffc2;
-}
-
-#choices-multiple-remove-button {
+#pod {
     background-color: #34495e;
     border: 1px solid #216f96;
     color: #c2ffc2;
+    height: auto;
+    max-height: 200px; /* Maksymalna wysokość */
+    overflow-y: scroll; /* Przewijanie w pionie */
 }
 
-/* Ustawienie maksymalnej wysokości listy rozwijanej z przewijaniem */
-.choices__list--dropdown {
-    max-height: 200px; /* Możesz dostosować tę wartość w zależności od potrzeb */
-    overflow-y: auto;
+#pod option {
+    background-color: #34495e;
+    color: #c2ffc2;
 }
