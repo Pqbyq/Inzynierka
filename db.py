@@ -91,7 +91,7 @@ def get_unique_namespaces():
     conn.close()
     return namespaces
 
-def get_latest_metrics(namespace=None, pod=None):
+def get_latest_metrics(namespace=None, pods=None):
     conn = get_db_connection()
     if conn is None:
         print("Failed to connect to the database.")
@@ -107,9 +107,9 @@ def get_latest_metrics(namespace=None, pod=None):
     if namespace:
         conditions.append('namespace = %s')
         params.append(namespace)
-    if pod:
-        conditions.append('name = %s')
-        params.append(pod)
+    if pods:
+        conditions.append('name = ANY(%s::text[])')
+        params.append(pods)
     
     if conditions:
         query += ' WHERE ' + ' AND '.join(conditions)
@@ -137,7 +137,7 @@ def get_pods_in_namespace(namespace):
     conn.close()
     return pods
 
-def get_usage_over_time(namespace=None, pod=None, start_time=None, end_time=None):
+def get_usage_over_time(namespace=None, pods=None, start_time=None, end_time=None):
     conn = get_db_connection()
     if conn is None:
         print("Failed to connect to the database.")
@@ -154,9 +154,9 @@ def get_usage_over_time(namespace=None, pod=None, start_time=None, end_time=None
     if namespace:
         query += ' AND namespace = %s'
         params.append(namespace)
-    if pod:
-        query += ' AND name = %s'
-        params.append(pod)
+    if pods:
+        query += ' AND name = ANY(%s::text[])'
+        params.append(pods)
     if start_time:
         query += ' AND timestamp >= %s'
         params.append(datetime.fromisoformat(start_time).astimezone(pytz.timezone('Europe/Warsaw')))
@@ -190,4 +190,3 @@ def get_usage_over_time(namespace=None, pod=None, start_time=None, end_time=None
             data['cpu_datasets'].append(cpu_dataset)
             data['memory_datasets'].append(memory_dataset)
     return data
-
