@@ -47,36 +47,42 @@ def get_and_save_metrics():
 @app.route('/', methods=['GET'])
 def index():
     selected_namespace = request.args.get('namespace', 'All')
-    selected_pod = request.args.get('pod', 'All')
+    selected_pods = request.args.getlist('pod')
     start_time = request.args.get('start_time')
     end_time = request.args.get('end_time')
     namespaces = get_unique_namespaces()
     pods = get_pods_in_namespace(None if selected_namespace == 'All' else selected_namespace)
     metrics = get_latest_metrics(
         None if selected_namespace == 'All' else selected_namespace,
-        None if selected_pod == 'All' else selected_pod
+        selected_pods if 'All' not in selected_pods else None
     )
     app.logger.info(f"Selected namespace: {selected_namespace}")
-    app.logger.info(f"Selected pod: {selected_pod}")
+    app.logger.info(f"Selected pods: {selected_pods}")
     app.logger.info(f"Namespaces: {namespaces}")
     app.logger.info(f"Pods: {pods}")
     app.logger.info(f"Metrics: {metrics}")
     return render_template('index.html', metrics=metrics, namespaces=namespaces, pods=pods,
-                           selected_namespace=selected_namespace, selected_pod=selected_pod)
+                           selected_namespace=selected_namespace, selected_pods=selected_pods)
 
-@app.route('/api/cpu_usage', methods=['GET'])
+@app.route('/api/pods', methods=['GET'])
+def get_pods():
+    namespace = request.args.get('namespace', 'All')
+    pods = get_pods_in_namespace(None if namespace == 'All' else namespace)
+    return jsonify({'pods': pods})
+
+@app.route('/api/usage', methods=['GET'])
 def usage():
     namespace = request.args.get('namespace')
-    pod = request.args.get('pod')
+    pods = request.args.get('pods').split(',')
     start_time = request.args.get('start_time')
     end_time = request.args.get('end_time')
     
-    app.logger.info(f"Fetching CPU usage for namespace: {namespace}, pod: {pod}, start_time: {start_time}, end_time: {end_time}")
+    app.logger.info(f"Fetching usage for namespace: {namespace}, pods: {pods}, start_time: {start_time}, end_time: {end_time}")
 
-    if not namespace or not pod or not start_time or not end_time:
+    if not namespace or not pods or not start_time or not end_time:
         return jsonify({'error': 'Missing required parameters'}), 400
     
-    data = get_usage_over_time(namespace, pod, start_time, end_time)
+    data = get_usage_over_time(namespace, pods, start_time, end_time)
 
     response = {
         'cpu_datasets': data['cpu_datasets'],
@@ -84,7 +90,6 @@ def usage():
         'labels': data['labels']
     }
     return jsonify(response)
-
 
 if __name__ == '__main__':
     scheduler.start()

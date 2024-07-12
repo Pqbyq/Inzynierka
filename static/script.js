@@ -1,6 +1,13 @@
-$(function () {
+$(document).ready(function() {
     var tz = "Europe/Warsaw";
     var cpuChart, memoryChart;
+
+    var multipleCancelButton = new Choices('#choices-multiple-remove-button', {
+        removeItemButton: true,
+        maxItemCount: 5,
+        searchResultLimit: 5,
+        renderChoiceLimit: 5
+    });
 
     $('#start_time').datetimepicker({
         format: 'YYYY-MM-DDTHH:mm',
@@ -13,37 +20,60 @@ $(function () {
         timeZone: tz
     });
 
-    $('#namespace, #pod').change(function () {
+    $('#namespace').change(function () {
         var namespace = $('#namespace').val();
-        var pod = $('#pod').val();
+        fetchPods(namespace);
+    });
+
+    $('#pod').change(function () {
+        var namespace = $('#namespace').val();
+        var pods = $('#choices-multiple-remove-button').val();
         var startTime = $('#start_time').val();
         var endTime = $('#end_time').val();
-        fetchData(namespace, pod, startTime, endTime);
+        fetchData(namespace, pods, startTime, endTime);
     });
 
     $("#timeRangeForm").on("submit", function (event) {
         event.preventDefault();
         var namespace = $('#namespace').val();
-        var pod = $('#pod').val();
+        var pods = $('#choices-multiple-remove-button').val();
         var startTime = $('#start_time').val();
         var endTime = $('#end_time').val();
-        fetchData(namespace, pod, startTime, endTime);
+        fetchData(namespace, pods, startTime, endTime);
     });
 
-    function fetchData(namespace, pod, startTime, endTime) {
-        console.log(`Fetching data for namespace: ${namespace} pod: ${pod} start_time: ${startTime} end_time: ${endTime}`);
+    function fetchPods(namespace) {
+        $.ajax({
+            url: `/api/pods?namespace=${namespace}`,
+            type: 'GET',
+            success: function (data) {
+                var podSelect = $('#choices-multiple-remove-button');
+                podSelect.empty();
+                data.pods.forEach(function (pod) {
+                    podSelect.append(new Option(pod, pod));
+                });
+                multipleCancelButton.setChoices(data.pods.map(pod => ({ value: pod, label: pod })), 'value', 'label', true);
+            },
+            error: function (xhr, status, error) {
+                console.error("Error fetching pods:", error);
+            }
+        });
+    }
+
+    function fetchData(namespace, pods, startTime, endTime) {
+        console.log(`Fetching data for namespace: ${namespace} pods: ${pods} start_time: ${startTime} end_time: ${endTime}`);
         
-        if (!namespace || !pod || !startTime || !endTime) {
+        if (!namespace || !pods || !startTime || !endTime) {
             console.error("One or more parameters are undefined");
             return;
         }
 
         $.ajax({
-            url: "/api/cpu_usage",
+            url: "/api/usage",
             type: 'GET',
             data: {
                 namespace: namespace,
-                pod: pod,
+                pods: pods.join(','), // Łączenie wielu wartości podów
                 start_time: startTime,
                 end_time: endTime
             },
@@ -184,17 +214,17 @@ $(function () {
 
     // Initial data fetch
     var namespace = $('#namespace').val();
-    var pod = $('#pod').val();
+    var pods = $('#choices-multiple-remove-button').val();
     var startTime = $('#start_time').val();
     var endTime = $('#end_time').val();
-    fetchData(namespace, pod, startTime, endTime);
+    fetchData(namespace, pods, startTime, endTime);
 
     // Set interval to fetch data every minute and update chart
     setInterval(function () {
         namespace = $('#namespace').val();
-        pod = $('#pod').val();
+        pods = $('#choices-multiple-remove-button').val();
         startTime = $('#start_time').val();
         endTime = $('#end_time').val();
-        fetchData(namespace, pod, startTime, endTime);
+        fetchData(namespace, pods, startTime, endTime);
     }, 60000); // 60000 ms = 1 minute
 });
