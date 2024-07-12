@@ -79,7 +79,7 @@ body {
     color: #2c3e50;
 }
 
-#cpu_usage_chart {
+#chart {
     height: 400px;
     background-color: #34495e;
 }

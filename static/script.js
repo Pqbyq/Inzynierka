@@ -1,6 +1,6 @@
 $(function () {
     var tz = "Europe/Warsaw";
-    var chart;  // Zmienna dla wykresu
+    var cpuChart, memoryChart;
 
     $('#start_time').datetimepicker({
         format: 'YYYY-MM-DDTHH:mm',
@@ -32,8 +32,15 @@ $(function () {
 
     function fetchData(namespace, pod, startTime, endTime) {
         console.log(`Fetching data for namespace: ${namespace} pod: ${pod} start_time: ${startTime} end_time: ${endTime}`);
+        
+        if (!namespace || !pod || !startTime || !endTime) {
+            console.error("One or more parameters are undefined");
+            return;
+        }
+
         $.ajax({
             url: "/api/cpu_usage",
+            type: 'GET',
             data: {
                 namespace: namespace,
                 pod: pod,
@@ -42,10 +49,13 @@ $(function () {
             },
             success: function (data) {
                 console.log("Data received from API:", data);
-                if (!data.datasets || data.datasets.length === 0) {
-                    console.warn("No datasets received.");
+                if (!data.cpu_datasets || data.cpu_datasets.length === 0) {
+                    console.warn("No CPU datasets received.");
                 }
-                updateChart(data.datasets, data.labels);
+                if (!data.memory_datasets || data.memory_datasets.length === 0) {
+                    console.warn("No memory datasets received.");
+                }
+                updateCharts(data.cpu_datasets, data.memory_datasets, data.labels);
             },
             error: function (xhr, status, error) {
                 console.error("Error fetching data:", error);
@@ -62,11 +72,11 @@ $(function () {
         return color;
     }
 
-    function updateChart(datasets, labels) {
-        console.log("Updating chart with data:", datasets);
+    function updateCharts(cpuDatasets, memoryDatasets, labels) {
+        console.log("Updating charts with data:", cpuDatasets, memoryDatasets);
 
         var maxY = 0;
-        datasets.forEach(function (dataset) {
+        cpuDatasets.forEach(function (dataset) {
             dataset.data.forEach(function (point) {
                 if (point.y > maxY) {
                     maxY = point.y;
@@ -74,42 +84,102 @@ $(function () {
             });
         });
 
-        if (!chart) {
-            chart = anychart.line();
-            chart.container("cpu_usage_chart");
+        memoryDatasets.forEach(function (dataset) {
+            dataset.data.forEach(function (point) {
+                if (point.y > maxY) {
+                    maxY = point.y;
+                }
+            });
+        });
+
+        var startTime = $('#start_time').val();
+        var endTime = $('#end_time').val();
+
+        var minDate = startTime ? new Date(startTime).toISOString() : null;
+        var maxDate = endTime ? new Date(endTime).toISOString() : null;
+
+        if (!cpuChart) {
+            cpuChart = anychart.line();
+            cpuChart.container("cpu_usage_chart");
+            cpuChart.xScale(anychart.scales.dateTime());
         } else {
-            chart.removeAllSeries();
+            cpuChart.removeAllSeries();
         }
 
-        chart.yScale().maximum(maxY);
-        chart.yScale().minimum(0); // Ensuring the Y-axis starts at 0
+        if (!memoryChart) {
+            memoryChart = anychart.line();
+            memoryChart.container("memory_usage_chart");
+            memoryChart.xScale(anychart.scales.dateTime());
+        } else {
+            memoryChart.removeAllSeries();
+        }
 
-        datasets.forEach(function (dataset) {
-            var series = chart.line(dataset.data);
-            series.name(dataset.label);
+        if (minDate !== null) {
+            cpuChart.xScale().minimum(minDate);
+            memoryChart.xScale().minimum(minDate);
+        }
+        if (maxDate !== null) {
+            cpuChart.xScale().maximum(maxDate);
+            memoryChart.xScale().maximum(maxDate);
+        }
 
-            // Assign a random color to each series
+        cpuChart.yScale().maximum(maxY);
+        cpuChart.yScale().minimum(0);
+        memoryChart.yScale().maximum(maxY);
+        memoryChart.yScale().minimum(0);
+
+        cpuDatasets.forEach(function (dataset) {
+            var series = cpuChart.line(dataset.data.map(function (point) {
+                return { x: new Date(point.x).toISOString(), y: point.y };
+            }));
+            series.name(dataset.label + " (CPU)");
+
             var randomColor = getRandomColor();
             series.stroke(randomColor);
             series.fill(randomColor);
 
-            // Tooltip settings
-            series.tooltip().format(function() {
+            series.tooltip().format(function () {
                 return `Namespace: ${this.getData('namespace')}<br>Pod: ${this.getData('name')}<br>CPU Usage: ${this.value}<br>Timestamp: ${moment(this.x).tz(tz).format('YYYY-MM-DD HH:mm:ss')}`;
             });
         });
 
-        chart.legend(true); // Enable the legend
-        chart.legend().itemsFormat("{%seriesName}"); // Show series name in the legend
-        chart.xAxis().labels().format(function () {
+        memoryDatasets.forEach(function (dataset) {
+            var series = memoryChart.line(dataset.data.map(function (point) {
+                return { x: new Date(point.x).toISOString(), y: point.y };
+            }));
+            series.name(dataset.label + " (Memory)");
+
+            var randomColor = getRandomColor();
+            series.stroke(randomColor);
+            series.fill(randomColor);
+
+            series.tooltip().format(function () {
+                return `Namespace: ${this.getData('namespace')}<br>Pod: ${this.getData('name')}<br>Memory Usage: ${this.value}<br>Timestamp: ${moment(this.x).tz(tz).format('YYYY-MM-DD HH:mm:ss')}`;
+            });
+        });
+
+        cpuChart.legend(true);
+        cpuChart.legend().itemsFormat("{%seriesName}");
+        cpuChart.xAxis().labels().format(function () {
             return moment(this.value).tz(tz).format('HH:mm');
         });
 
-        chart.tooltip().titleFormat(function() {
+        cpuChart.tooltip().titleFormat(function() {
             return moment(this.points[0].x).tz(tz).format('YYYY-MM-DD HH:mm:ss');
         });
 
-        chart.draw();
+        memoryChart.legend(true);
+        memoryChart.legend().itemsFormat("{%seriesName}");
+        memoryChart.xAxis().labels().format(function () {
+            return moment(this.value).tz(tz).format('HH:mm');
+        });
+
+        memoryChart.tooltip().titleFormat(function() {
+            return moment(this.points[0].x).tz(tz).format('YYYY-MM-DD HH:mm:ss');
+        });
+
+        cpuChart.draw();
+        memoryChart.draw();
     }
 
     // Initial data fetch

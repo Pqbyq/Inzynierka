@@ -137,20 +137,20 @@ def get_pods_in_namespace(namespace):
     conn.close()
     return pods
 
-def get_cpu_usage_over_time(namespace=None, pod=None, start_time=None, end_time=None):
+def get_usage_over_time(namespace=None, pod=None, start_time=None, end_time=None):
     conn = get_db_connection()
     if conn is None:
         print("Failed to connect to the database.")
-        return {'labels': [], 'datasets': []}
+        return {'labels': [], 'cpu_datasets': [], 'memory_datasets': []}
 
     cursor = conn.cursor(cursor_factory=RealDictCursor)
     query = '''
-        SELECT timestamp, name, cpu_usage, namespace
+        SELECT timestamp, name, cpu_usage, memory_usage, namespace
         FROM metrics
         WHERE 1=1
     '''
     params = []
- 
+
     if namespace:
         query += ' AND namespace = %s'
         params.append(namespace)
@@ -171,16 +171,23 @@ def get_cpu_usage_over_time(namespace=None, pod=None, start_time=None, end_time=
     cursor.close()
     conn.close()
 
-    data = {'labels': [], 'datasets': []}
+    data = {'labels': [], 'cpu_datasets': [], 'memory_datasets': []}
     if rows:
         data['labels'] = sorted(list(set(row['timestamp'].astimezone(pytz.timezone('Europe/Warsaw')).isoformat() for row in rows)))
 
         containers = {row['name'] for row in rows}
         for container in containers:
-            dataset = {
-                'label': container,
+            cpu_dataset = {
+                'label': f"{container} CPU",
                 'data': [{'x': row['timestamp'].astimezone(pytz.timezone('Europe/Warsaw')).isoformat(), 'y': float(row['cpu_usage']), 'name': row['name'], 'namespace': row['namespace']} for row in rows if row['name'] == container],
                 'fill': False
             }
-            data['datasets'].append(dataset)
+            memory_dataset = {
+                'label': f"{container} Memory",
+                'data': [{'x': row['timestamp'].astimezone(pytz.timezone('Europe/Warsaw')).isoformat(), 'y': float(row['memory_usage']), 'name': row['name'], 'namespace': row['namespace']} for row in rows if row['name'] == container],
+                'fill': False
+            }
+            data['cpu_datasets'].append(cpu_dataset)
+            data['memory_datasets'].append(memory_dataset)
     return data
+
