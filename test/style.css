@@ -83,6 +83,10 @@ body {
     height: 400px;
     background-color: #34495e;
 }
+#memory_usage_chart {
+    height: 400px;
+    background-color: #34495e;
+}
 
 #start_time, #end_time {
     background-color: #34495e;
