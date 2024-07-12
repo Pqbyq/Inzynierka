@@ -5,7 +5,7 @@ import os
 from datetime import datetime
 import pytz
 from metrics import get_cluster_metrics
-from db import save_to_postgresql, get_unique_namespaces, get_pods_in_namespace, get_latest_metrics, get_cpu_usage_over_time
+from db import save_to_postgresql, get_unique_namespaces, get_pods_in_namespace, get_latest_metrics, get_usage_over_time
 from flask_apscheduler import APScheduler
 
 log_dir = '/var/log/metrics-app/'
@@ -65,18 +65,25 @@ def index():
                            selected_namespace=selected_namespace, selected_pod=selected_pod)
 
 @app.route('/api/cpu_usage', methods=['GET'])
-def cpu_usage():
-    namespace = request.args.get('namespace', None)
-    pod = request.args.get('pod', None)
-    start_time = request.args.get('start_time', None)
-    end_time = request.args.get('end_time', None)
-
-    app.logger.info(f"Fetching CPU usage for namespace: {namespace}, pod: {pod}, start_time: {start_time}, end_time: {end_time}")
+def usage():
+    namespace = request.args.get('namespace')
+    pod = request.args.get('pod')
+    start_time = request.args.get('start_time')
+    end_time = request.args.get('end_time')
     
-    data = get_cpu_usage_over_time(namespace, pod, start_time, end_time)
-    app.logger.info(f"CPU usage data: {data}")
-    return jsonify(data)
+    app.logger.info(f"Fetching CPU usage for namespace: {namespace}, pod: {pod}, start_time: {start_time}, end_time: {end_time}")
 
+    if not namespace or not pod or not start_time or not end_time:
+        return jsonify({'error': 'Missing required parameters'}), 400
+    
+    data = get_usage_over_time(namespace, pod, start_time, end_time)
+
+    response = {
+        'cpu_datasets': data['cpu_datasets'],
+        'memory_datasets': data['memory_datasets'],
+        'labels': data['labels']
+    }
+    return jsonify(response)
 
 
 if __name__ == '__main__':
