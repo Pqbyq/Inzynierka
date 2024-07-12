@@ -155,7 +155,7 @@ def get_usage_over_time(namespace=None, pods=None, start_time=None, end_time=Non
         query += ' AND namespace = %s'
         params.append(namespace)
     if pods:
-        query += ' AND name = ANY(%s::text[])'
+        query += ' AND name = ANY(%s)'
         params.append(pods)
     if start_time:
         query += ' AND timestamp >= %s'

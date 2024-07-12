@@ -1,13 +1,6 @@
-$(document).ready(function() {
+$(function () {
     var tz = "Europe/Warsaw";
     var cpuChart, memoryChart;
-
-    var multipleCancelButton = new Choices('#choices-multiple-remove-button', {
-        removeItemButton: true,
-        maxItemCount: 5,
-        searchResultLimit: 5,
-        renderChoiceLimit: 5
-    });
 
     $('#start_time').datetimepicker({
         format: 'YYYY-MM-DDTHH:mm',
@@ -22,43 +15,33 @@ $(document).ready(function() {
 
     $('#namespace').change(function () {
         var namespace = $('#namespace').val();
-        fetchPods(namespace);
-    });
-
-    $('#pod').change(function () {
-        var namespace = $('#namespace').val();
-        var pods = $('#choices-multiple-remove-button').val();
-        var startTime = $('#start_time').val();
-        var endTime = $('#end_time').val();
-        fetchData(namespace, pods, startTime, endTime);
+        $.ajax({
+            url: '/api/pods',
+            type: 'GET',
+            data: {
+                namespace: namespace
+            },
+            success: function (data) {
+                var podSelect = $('#pod');
+                podSelect.empty();
+                data.pods.forEach(function (pod) {
+                    podSelect.append($('<option>', {
+                        value: pod,
+                        text: pod
+                    }));
+                });
+            }
+        });
     });
 
     $("#timeRangeForm").on("submit", function (event) {
         event.preventDefault();
         var namespace = $('#namespace').val();
-        var pods = $('#choices-multiple-remove-button').val();
+        var pods = $('#pod').val();
         var startTime = $('#start_time').val();
         var endTime = $('#end_time').val();
-        fetchData(namespace, pods, startTime, endTime);
+        fetchData(namespace, pods, startTime, endTime); // Przekazujemy jako tablica
     });
-
-    function fetchPods(namespace) {
-        $.ajax({
-            url: `/api/pods?namespace=${namespace}`,
-            type: 'GET',
-            success: function (data) {
-                var podSelect = $('#choices-multiple-remove-button');
-                podSelect.empty();
-                data.pods.forEach(function (pod) {
-                    podSelect.append(new Option(pod, pod));
-                });
-                multipleCancelButton.setChoices(data.pods.map(pod => ({ value: pod, label: pod })), 'value', 'label', true);
-            },
-            error: function (xhr, status, error) {
-                console.error("Error fetching pods:", error);
-            }
-        });
-    }
 
     function fetchData(namespace, pods, startTime, endTime) {
         console.log(`Fetching data for namespace: ${namespace} pods: ${pods} start_time: ${startTime} end_time: ${endTime}`);
@@ -71,9 +54,10 @@ $(document).ready(function() {
         $.ajax({
             url: "/api/usage",
             type: 'GET',
+            traditional: true,
             data: {
                 namespace: namespace,
-                pods: pods.join(','), // Łączenie wielu wartości podów
+                'pods[]': pods, // Przekazujemy jako tablica
                 start_time: startTime,
                 end_time: endTime
             },
@@ -160,7 +144,7 @@ $(document).ready(function() {
 
         cpuDatasets.forEach(function (dataset) {
             var series = cpuChart.line(dataset.data.map(function (point) {
-                return { x: new Date(point.x).toISOString(), y: point.y };
+                return { x: new Date(point.x).toISOString(), y: point.y, namespace: point.namespace, name: point.name };
             }));
             series.name(dataset.label + " (CPU)");
 
@@ -168,14 +152,14 @@ $(document).ready(function() {
             series.stroke(randomColor);
             series.fill(randomColor);
 
-            series.tooltip().format(function () {
-                return `Namespace: ${this.getData('namespace')}<br>Pod: ${this.getData('name')}<br>CPU Usage: ${this.value}<br>Timestamp: ${moment(this.x).tz(tz).format('YYYY-MM-DD HH:mm:ss')}`;
+            series.tooltip().useHtml(true).format(function () {
+                return `<strong>Namespace:</strong> ${this.getData('namespace')}<br><strong>Pod:</strong> ${this.getData('name')}<br><strong>CPU Usage:</strong> ${this.value}<br><strong>Timestamp:</strong> ${moment(this.x).tz(tz).format('YYYY-MM-DD HH:mm:ss')}`;
             });
         });
 
         memoryDatasets.forEach(function (dataset) {
             var series = memoryChart.line(dataset.data.map(function (point) {
-                return { x: new Date(point.x).toISOString(), y: point.y };
+                return { x: new Date(point.x).toISOString(), y: point.y, namespace: point.namespace, name: point.name };
             }));
             series.name(dataset.label + " (Memory)");
 
@@ -183,48 +167,24 @@ $(document).ready(function() {
             series.stroke(randomColor);
             series.fill(randomColor);
 
-            series.tooltip().format(function () {
-                return `Namespace: ${this.getData('namespace')}<br>Pod: ${this.getData('name')}<br>Memory Usage: ${this.value}<br>Timestamp: ${moment(this.x).tz(tz).format('YYYY-MM-DD HH:mm:ss')}`;
+            series.tooltip().useHtml(true).format(function () {
+                return `<strong>Namespace:</strong> ${this.getData('namespace')}<br><strong>Pod:</strong> ${this.getData('name')}<br><strong>Memory Usage:</strong> ${this.value}<br><strong>Timestamp:</strong> ${moment(this.x).tz(tz).format('YYYY-MM-DD HH:mm:ss')}`;
             });
         });
 
         cpuChart.legend(true);
         cpuChart.legend().itemsFormat("{%seriesName}");
-        cpuChart.xAxis().labels().format(function () {
-            return moment(this.value).tz(tz).format('HH:mm');
-        });
-
-        cpuChart.tooltip().titleFormat(function() {
-            return moment(this.points[0].x).tz(tz).format('YYYY-MM-DD HH:mm:ss');
+        cpuChart.xAxis().labels().format(function (value) {
+            return moment(value).tz(tz).format('YYYY-MM-DD HH:mm:ss');
         });
 
         memoryChart.legend(true);
         memoryChart.legend().itemsFormat("{%seriesName}");
-        memoryChart.xAxis().labels().format(function () {
-            return moment(this.value).tz(tz).format('HH:mm');
-        });
-
-        memoryChart.tooltip().titleFormat(function() {
-            return moment(this.points[0].x).tz(tz).format('YYYY-MM-DD HH:mm:ss');
+        memoryChart.xAxis().labels().format(function (value) {
+            return moment(value).tz(tz).format('YYYY-MM-DD HH:mm:ss');
         });
 
         cpuChart.draw();
         memoryChart.draw();
     }
-
-    // Initial data fetch
-    var namespace = $('#namespace').val();
-    var pods = $('#choices-multiple-remove-button').val();
-    var startTime = $('#start_time').val();
-    var endTime = $('#end_time').val();
-    fetchData(namespace, pods, startTime, endTime);
-
-    // Set interval to fetch data every minute and update chart
-    setInterval(function () {
-        namespace = $('#namespace').val();
-        pods = $('#choices-multiple-remove-button').val();
-        startTime = $('#start_time').val();
-        endTime = $('#end_time').val();
-        fetchData(namespace, pods, startTime, endTime);
-    }, 60000); // 60000 ms = 1 minute
 });
