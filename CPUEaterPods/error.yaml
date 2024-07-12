@@ -1,0 +1,25 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: failing-deployment
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: failing-app
+  template:
+    metadata:
+      labels:
+        app: failing-app
+    spec:
+      containers:
+      - name: failing-container
+        image: busybox
+        command: ["sh", "-c", "exit 1"]
+        resources:
+          requests:
+            memory: "10Mi"
+            cpu: "10m"
+          limits:
+            memory: "10Mi"
+            cpu: "10m"
