@@ -2,16 +2,24 @@ $(function () {
     var tz = "Europe/Warsaw";
     var cpuChart, memoryChart;
 
+    function getDefaultTimes() {
+        var endTime = moment().tz(tz).format('YYYY-MM-DDTHH:mm');
+        var startTime = moment().tz(tz).subtract(1, 'hours').format('YYYY-MM-DDTHH:mm');
+        return { startTime: startTime, endTime: endTime };
+    }
+
+    var defaultTimes = getDefaultTimes();
     $('#start_time').datetimepicker({
         format: 'YYYY-MM-DDTHH:mm',
         useCurrent: false,
         timeZone: tz
-    });
+    }).val(defaultTimes.startTime);
+
     $('#end_time').datetimepicker({
         format: 'YYYY-MM-DDTHH:mm',
         useCurrent: false,
         timeZone: tz
-    });
+    }).val(defaultTimes.endTime);
 
     $('#namespace').change(function () {
         var namespace = $('#namespace').val();
@@ -109,22 +117,44 @@ $(function () {
 
         Highcharts.chart('cpu_usage_chart', {
             chart: {
-                type: 'line'
+                type: 'line',
+                backgroundColor: '#2b323a'  // Tło wykresu
             },
             title: {
-                text: 'CPU Usage Over Time'
+                text: 'CPU Usage Over Time',
+                style: {
+                    color: '#c2ffc2'  // Kolor czcionki tytułu
+                }
             },
             xAxis: {
                 type: 'datetime',
                 title: {
-                    text: 'Time'
-                }
+                    text: 'Time',
+                    style: {
+                        color: '#c2ffc2'  // Kolor czcionki tytułu osi X
+                    }
+                },
+                labels: {
+                    style: {
+                        color: '#c2ffc2'  // Kolor czcionki etykiet osi X
+                    }
+                },
+                gridLineWidth: 0  // Usunięcie linii siatki wzdłuż osi X
             },
             yAxis: {
                 title: {
-                    text: 'CPU Usage'
+                    text: 'CPU Usage',
+                    style: {
+                        color: '#c2ffc2'  // Kolor czcionki tytułu osi Y
+                    }
                 },
-                min: 0
+                labels: {
+                    style: {
+                        color: '#c2ffc2'  // Kolor czcionki wartości osi Y
+                    }
+                },
+                min: 0,
+                gridLineWidth: 0  // Usunięcie linii siatki wzdłuż osi Y
             },
             tooltip: {
                 shared: true,
@@ -135,6 +165,11 @@ $(function () {
                         tooltip += '<span style="color:' + point.series.color + '">\u25CF</span> ' + point.series.name + ': <b>' + point.y + '</b><br/>';
                     });
                     return tooltip;
+                },
+                backgroundColor: '#2b323a',  // Tło tooltipa
+                borderColor: '#c2ffc2',  // Kolor obramowania tooltipa
+                style: {
+                    color: '#c2ffc2'  // Kolor czcionki tooltipa
                 }
             },
             series: seriesDataCPU
@@ -142,22 +177,44 @@ $(function () {
 
         Highcharts.chart('memory_usage_chart', {
             chart: {
-                type: 'line'
+                type: 'line',
+                backgroundColor: '#2b323a'  // Tło wykresu
             },
             title: {
-                text: 'Memory Usage Over Time'
+                text: 'Memory Usage Over Time',
+                style: {
+                    color: '#c2ffc2'  // Kolor czcionki tytułu
+                }
             },
             xAxis: {
                 type: 'datetime',
                 title: {
-                    text: 'Time'
-                }
+                    text: 'Time',
+                    style: {
+                        color: '#c2ffc2'  // Kolor czcionki tytułu osi X
+                    }
+                },
+                labels: {
+                    style: {
+                        color: '#c2ffc2'  // Kolor czcionki etykiet osi X
+                    }
+                },
+                gridLineWidth: 0  // Usunięcie linii siatki wzdłuż osi X
             },
             yAxis: {
                 title: {
-                    text: 'Memory Usage'
+                    text: 'Memory Usage',
+                    style: {
+                        color: '#c2ffc2'  // Kolor czcionki tytułu osi Y
+                    }
                 },
-                min: 0
+                labels: {
+                    style: {
+                        color: '#c2ffc2'  // Kolor czcionki wartości osi Y
+                    }
+                },
+                min: 0,
+                gridLineWidth: 0  // Usunięcie linii siatki wzdłuż osi Y
             },
             tooltip: {
                 shared: true,
@@ -168,9 +225,30 @@ $(function () {
                         tooltip += '<span style="color:' + point.series.color + '">\u25CF</span> ' + point.series.name + ': <b>' + point.y + '</b><br/>';
                     });
                     return tooltip;
+                },
+                backgroundColor: '#2b323a',  // Tło tooltipa
+                borderColor: '#c2ffc2',  // Kolor obramowania tooltipa
+                style: {
+                    color: '#c2ffc2'  // Kolor czcionki tooltipa
                 }
             },
             series: seriesDataMemory
         });
     }
+
+    // Initial data fetch
+    var namespace = $('#namespace').val();
+    var pods = $('#pod').val();
+    var startTime = $('#start_time').val();
+    var endTime = $('#end_time').val();
+    fetchData(namespace, pods, startTime, endTime);
+
+    // Automatic refresh every minute
+    setInterval(function () {
+        namespace = $('#namespace').val();
+        pods = $('#pod').val();
+        startTime = $('#start_time').val();
+        endTime = $('#end_time').val();
+        fetchData(namespace, pods, startTime, endTime);
+    }, 60000); // 60000 ms = 1 minute
 });

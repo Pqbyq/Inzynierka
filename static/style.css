@@ -18,8 +18,9 @@ body {
     color: #7dbed8;
 }
 
-.container-fluid {
+.container {
     margin-top: 20px;
+    width: 100%; /* Dodano aby kontener zajmował całą szerokość */
 }
 
 .card {
@@ -27,6 +28,7 @@ body {
     border: none;
     color: #ffffff;
     margin-bottom: 20px;
+    width: 100%; /* Dodano aby karta zajmowała całą szerokość */
 }
 
 .card-header {
@@ -36,10 +38,12 @@ body {
 
 .card-body {
     background-color: #2c3e50;
+    width: 100%; /* Dodano aby karta zajmowała całą szerokość */
 }
 
 .table {
     color: #c2ffc2;
+    width: 100%; /* Dodano aby tabela zajmowała całą szerokość */
 }
 
 .table th,
@@ -75,8 +79,7 @@ body {
     color: #2c3e50;
 }
 
-#cpu_usage_chart,
-#memory_usage_chart {
+#chart {
     height: 400px;
     background-color: #34495e;
 }
@@ -97,6 +100,32 @@ body {
     color: #7dbed8;
 }
 
+/* Dodatkowe style dla Highcharts */
+.highcharts-background {
+    fill: #2b323a !important;  /* Tło wykresu */
+}
+
+.highcharts-title {
+    color: #c2ffc2 !important;  /* Kolor czcionki tytułu */
+}
+
+.highcharts-axis-title {
+    color: #c2ffc2 !important;  /* Kolor czcionki tytułu osi */
+}
+
+.highcharts-axis-labels text {
+    color: #c2ffc2 !important;  /* Kolor czcionki etykiet osi */
+}
+
+.highcharts-tooltip {
+    background-color: #2b323a !important;  /* Tło tooltipa */
+    color: #c2ffc2 !important;  /* Kolor czcionki tooltipa */
+}
+
+.highcharts-legend-item text {
+    fill: #c2ffc2 !important;  /* Kolor czcionki legendy */
+}
+
 .styled-table {
     border-collapse: collapse;
     margin: 25px 0;
@@ -104,6 +133,7 @@ body {
     font-family: sans-serif;
     min-width: 400px;
     box-shadow: 0 0 20px rgba(0, 0, 0, 0.15);
+    width: 100%;
 }
 
 .styled-table thead tr {
