@@ -1,12 +1,15 @@
-from flask import Flask, render_template, request, jsonify
+from flask import Flask, render_template, request, jsonify, redirect, url_for
 from logging.handlers import RotatingFileHandler
 import logging
 import os
 from datetime import datetime
 import pytz
+from kubernetes import client, config
+from kubernetes.client.rest import ApiException
 from metrics import get_cluster_metrics
 from db import save_to_postgresql, get_unique_namespaces, get_pods_in_namespace, get_latest_metrics, get_usage_over_time
 from flask_apscheduler import APScheduler
+
 
 log_dir = '/var/log/metrics-app/'
 log_file = 'app.log'
@@ -90,6 +93,38 @@ def usage():
         'labels': data['labels']
     }
     return jsonify(response)
+
+@app.route('/pod/<namespace>/<pod_name>', methods=['GET'])
+def pod_details(namespace, pod_name):
+    pod_metrics = get_latest_metrics(namespace, [pod_name])
+    pod_logs = get_pod_logs(namespace, pod_name)
+    return render_template('pod_details.html', pod_metrics=pod_metrics, pod_logs=pod_logs, namespace=namespace, pod_name=pod_name)
+
+@app.route('/restart_pod', methods=['POST'])
+def restart_pod():
+    namespace = request.form.get('namespace')
+    pod_name = request.form.get('pod_name')
+    if namespace and pod_name:
+        restart_pod_function(namespace, pod_name)
+        return jsonify({'status': 'success'})
+    return jsonify({'status': 'failure', 'message': 'Missing namespace or pod name'}), 400
+
+def get_pod_logs(namespace, pod_name):
+    v1 = client.CoreV1Api()
+    try:
+        logs = v1.read_namespaced_pod_log(name=pod_name, namespace=namespace)
+        return logs
+    except client.exceptions.ApiException as e:
+        return str(e)
+
+def restart_pod_function(namespace, pod_name):
+    v1 = client.CoreV1Api()
+    try:
+        v1.delete_namespaced_pod(name=pod_name, namespace=namespace)
+        return True
+    except client.exceptions.ApiException as e:
+        print(f"Exception when deleting pod: {e}")
+        return False
 
 
 if __name__ == '__main__':

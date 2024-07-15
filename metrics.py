@@ -1,9 +1,9 @@
 from kubernetes import client, config
 from kubernetes.client.rest import ApiException
 from kubernetes.config import ConfigException
-import datetime as d
+from datetime import datetime
 import os
-
+import pytz
 
 def convert_to_readable_cpu(value):
     units = {'K': 1e3, 'M': 1e6, 'G': 1e9, 'T': 1e12, 'P': 1e15, 'E': 1e18, 'Z': 1e21, 'Y': 1e24, 'n': 1e-9,
@@ -80,7 +80,7 @@ def get_cluster_metrics(namespace=None):
                 'status': pod_status,
                 'cpu_usage': cpu_usage,
                 'memory_usage': memory_usage,
-                'timestamp': d.datetime.now().replace(microsecond=0)
+                'timestamp': datetime.now(pytz.timezone('Europe/Warsaw')).replace(microsecond=0)
             })
 
     return cluster_metrics

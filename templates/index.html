@@ -95,7 +95,7 @@
                                 {% for metric in metrics %}
                                 <tr>
                                     <td>{{ metric['namespace'] }}</td>
-                                    <td>{{ metric['name'] }}</td>
+                                    <td><a href="/pod/{{ metric['namespace'] }}/{{ metric['name'] }}">{{ metric['name'] }}</a></td>
                                     <td>{{ metric['status'] }}</td>
                                     <td>{{ metric['cpu_usage'] }}</td>
                                     <td>{{ metric['memory_usage'] }}</td>

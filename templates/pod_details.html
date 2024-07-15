@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pod Details - {{ pod_name }}</title>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <script src="https://code.jquery.com/jquery-3.3.1.min.js"></script>
+</head>
+<body>
+    <div class="container mt-3">
+        <h1 class="pod_details_title">Details for Pod: {{ pod_name }}</h1>
+        <h2 class="pod_details_title">/h2>>Namespace: {{ namespace }}</h2>
+        <div class="card mt-3">
+            <div class="card-header">
+                <h2>Pod Metrics</h2>
+            </div>
+            <div class="card-body">
+                <table class="styled-table">
+                    <thead class="thead-dark">
+                        <tr>
+                            <th>Namespace</th>
+                            <th>Name</th>
+                            <th>Status</th>
+                            <th>CPU Usage</th>
+                            <th>Memory Usage</th>
+                            <th>Timestamp</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for metric in pod_metrics %}
+                        <tr>
+                            <td>{{ metric['namespace'] }}</td>
+                            <td>{{ metric['name'] }}</td>
+                            <td>{{ metric['status'] }}</td>
+                            <td>{{ metric['cpu_usage'] }}</td>
+                            <td>{{ metric['memory_usage'] }}</td>
+                            <td>{{ metric['timestamp'] }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        <div class="card mt-3">
+            <div class="card-header">
+                <h2>Actions</h2>
+            </div>
+            <div class="card-body">
+                <button id="restartPodBtn" class="btn btn-danger">Restart Pod</button>
+            </div>
+        </div>
+        <div class="card mt-3">
+            <div class="card-header">
+                <h2>Pod Logs</h2>
+            </div>
+        </div>
+    </div>
+    <div class="logs">
+        <pre>{{ pod_logs }}</pre>
+    </div>
+    <script>
+        $(document).ready(function(){
+            $('#restartPodBtn').click(function(){
+                $.ajax({
+                    url: "/restart_pod",
+                    type: "POST",
+                    data: {
+                        namespace: "{{ namespace }}",
+                        pod_name: "{{ pod_name }}"
+                    },
+                    success: function(response) {
+                        if(response.status === 'success') {
+                            alert('Pod restarted successfully');
+                        } else {
+                            alert('Failed to restart pod: ' + response.message);
+                        }
+                    }
+                });
+            });
+        });
+    </script>
+</body>
+</html>

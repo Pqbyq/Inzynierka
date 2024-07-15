@@ -79,11 +79,7 @@ body {
     color: #2c3e50;
 }
 
-#cpu_usage_chart {
-    height: 400px;
-    background-color: #34495e;
-}
-#memory_usage_chart {
+#chart {
     height: 400px;
     background-color: #34495e;
 }
@@ -104,25 +100,30 @@ body {
     color: #7dbed8;
 }
 
-/* Dodatkowe style dla loadera */
-.anychart-loader {
-    background: rgba(44, 62, 80, 0.8); /* Ciemne tło z przezroczystością */
+/* Dodatkowe style dla Highcharts */
+.highcharts-background {
+    fill: #2b323a !important;  /* Tło wykresu */
 }
 
-.anychart-loader .rotating-plane {
-    border-color: #216f96;
+.highcharts-title {
+    color: #c2ffc2 !important;  /* Kolor czcionki tytułu */
 }
 
-.anychart-loader .chart-row .chart-col.green {
-    background: #8cc41d;
+.highcharts-axis-title {
+    color: #c2ffc2 !important;  /* Kolor czcionki tytułu osi */
 }
 
-.anychart-loader .chart-row .chart-col.orange {
-    background: #7dbed8;
+.highcharts-axis-labels text {
+    color: #c2ffc2 !important;  /* Kolor czcionki etykiet osi */
 }
 
-.anychart-loader .chart-row .chart-col.red {
-    background: #f0402e;
+.highcharts-tooltip {
+    background-color: #2b323a !important;  /* Tło tooltipa */
+    color: #c2ffc2 !important;  /* Kolor czcionki tooltipa */
+}
+
+.highcharts-legend-item text {
+    fill: #c2ffc2 !important;  /* Kolor czcionki legendy */
 }
 
 .styled-table {
@@ -152,4 +153,27 @@ body {
 
 .styled-table tbody tr:nth-child(even) {
     background-color: rgba(55, 77, 99, 0.8) /* Ciemniejszy kolor dla co drugiego wiersza */
+}
+.navbar-brand {
+    color: #001f05;
+    margin-bottom: 20px; /* Dodany margines */
+}
+
+.container .card:first-of-type {
+    margin-top: 20px; /* Dodany margines między kartami */
+}
+.container-fluid{
+    margin-top: 20px;
+}
+.pod_details_title{
+    color: #ffffff;
+}
+.logs pre {
+    background-color: #2b323a; /* Tło dla logów */
+    color: #ffffff; /* Kolor tekstu logów */
+    padding: 15px;
+    white-space: pre-wrap; /* Zawijanie tekstu */
+    word-wrap: break-word; /* Zawijanie tekstu */
+    width: calc(100% - 30px); /* Szerokość okienka z logami z lekkimi odstępami od boków */
+    margin: 0 auto; /* Wyśrodkowanie okienka */
 }
