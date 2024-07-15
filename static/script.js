@@ -48,13 +48,13 @@ $(function () {
         var pods = $('#pod').val();
         var startTime = $('#start_time').val();
         var endTime = $('#end_time').val();
-        fetchData(namespace, pods, startTime, endTime); // Przekazujemy jako tablica
+        fetchData(namespace, pods, startTime, endTime);
     });
 
     function fetchData(namespace, pods, startTime, endTime) {
         console.log(`Fetching data for namespace: ${namespace} pods: ${pods} start_time: ${startTime} end_time: ${endTime}`);
-        
-        if (!namespace || !pods || !startTime || !endTime) {
+
+        if (!namespace || !startTime || !endTime) {
             console.error("One or more parameters are undefined");
             return;
         }
@@ -65,7 +65,7 @@ $(function () {
             traditional: true,
             data: {
                 namespace: namespace,
-                'pods[]': pods, // Przekazujemy jako tablica
+                'pods[]': pods,
                 start_time: startTime,
                 end_time: endTime
             },

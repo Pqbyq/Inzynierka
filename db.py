@@ -91,12 +91,13 @@ def get_unique_namespaces():
     conn.close()
     return namespaces
 
-def get_latest_metrics(namespace=None, pods=None):
+def get_latest_metrics(namespace=None, pod_names=None):
     conn = get_db_connection()
     if conn is None:
         print("Failed to connect to the database.")
         return []
     cursor = conn.cursor(cursor_factory=RealDictCursor)
+    
     query = '''
         SELECT DISTINCT ON (name) *
         FROM metrics
@@ -107,9 +108,9 @@ def get_latest_metrics(namespace=None, pods=None):
     if namespace:
         conditions.append('namespace = %s')
         params.append(namespace)
-    if pods:
-        conditions.append('name = ANY(%s::text[])')
-        params.append(pods)
+    if pod_names:
+        conditions.append('name = ANY(%s)')
+        params.append(pod_names)
     
     if conditions:
         query += ' WHERE ' + ' AND '.join(conditions)
@@ -121,6 +122,7 @@ def get_latest_metrics(namespace=None, pods=None):
     cursor.close()
     conn.close()
     return metrics
+
 
 
 def get_pods_in_namespace(namespace):

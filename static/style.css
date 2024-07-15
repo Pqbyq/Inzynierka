@@ -154,3 +154,26 @@ body {
 .styled-table tbody tr:nth-child(even) {
     background-color: rgba(55, 77, 99, 0.8) /* Ciemniejszy kolor dla co drugiego wiersza */
 }
+.navbar-brand {
+    color: #001f05;
+    margin-bottom: 20px; /* Dodany margines */
+}
+
+.container .card:first-of-type {
+    margin-top: 20px; /* Dodany margines między kartami */
+}
+.container-fluid{
+    margin-top: 20px;
+}
+.pod_details_title{
+    color: #ffffff;
+}
+.logs pre {
+    background-color: #2b323a; /* Tło dla logów */
+    color: #ffffff; /* Kolor tekstu logów */
+    padding: 15px;
+    white-space: pre-wrap; /* Zawijanie tekstu */
+    word-wrap: break-word; /* Zawijanie tekstu */
+    width: calc(100% - 30px); /* Szerokość okienka z logami z lekkimi odstępami od boków */
+    margin: 0 auto; /* Wyśrodkowanie okienka */
+}
