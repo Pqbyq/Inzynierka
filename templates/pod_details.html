@@ -51,15 +51,16 @@
                 <button id="restartPodBtn" class="btn btn-danger">Restart Pod</button>
             </div>
         </div>
-        <div class="card mt-3">
-            <div class="card-header">
-                <h2>Pod Logs</h2>
-            </div>
+    </div>
+    <div class="card mt-3">
+        <div class="card-header">
+            <h2>Pod Logs</h2>
+        </div>
+        <div class="logs">
+            <pre>{{ pod_logs }}</pre>
         </div>
     </div>
-    <div class="logs">
-        <pre>{{ pod_logs }}</pre>
-    </div>
+
     <script>
         $(document).ready(function(){
             $('#restartPodBtn').click(function(){
