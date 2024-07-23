@@ -79,14 +79,10 @@ def usage():
     pods = request.args.getlist('pods[]')
     start_time = request.args.get('start_time')
     end_time = request.args.get('end_time')
-    
     app.logger.info(f"Fetching usage for namespace: {namespace}, pods: {pods}, start_time: {start_time}, end_time: {end_time}")
-
     if not namespace or not pods or not start_time or not end_time:
         return jsonify({'error': 'Missing required parameters'}), 400
-    
     data = get_usage_over_time(namespace, pods, start_time, end_time)
-
     response = {
         'cpu_datasets': data['cpu_datasets'],
         'memory_datasets': data['memory_datasets'],
